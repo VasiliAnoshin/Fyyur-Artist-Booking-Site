@@ -10,4 +10,7 @@ DEBUG = True
 
 
 # TODO IMPLEMENT DATABASE URL
-SQLALCHEMY_DATABASE_URI = '<Put your local database url>'
+SQLALCHEMY_DATABASE_URI = 'postgres://USER@localhost:5432/jane'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+#if SQLALCHEMY_DATABASE_URI is None:
+#    raise Exception('Please, set the DATABASE_URL environment variable to be postgresql://postgres@localhost/jane')
