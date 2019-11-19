@@ -14,6 +14,7 @@ from flask_wtf import Form
 from forms import *
 from models import *
 from flask_migrate import Migrate
+from models import Venue, Artist
 
 #----------------------------------------------------------------------------#
 # App Config.
