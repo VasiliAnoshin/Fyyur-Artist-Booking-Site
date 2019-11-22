@@ -24,7 +24,6 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-
 class Show(db.Model):
      __tablename__ = 'Show'
 
@@ -42,8 +41,9 @@ class Venue(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    image_link = db.Column(db.String(500), nullable = True)
+    facebook_link = db.Column(db.String(120),)
+    genres = db.Column(db.String(120))
     shows = db.relationship("Show", backref='venue', lazy = True)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
@@ -57,7 +57,7 @@ class Artist(db.Model):
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
+    image_link = db.Column(db.String(500),nullable = True)
     facebook_link = db.Column(db.String(120))
     shows = db.relationship("Show", backref='artist', lazy = True)
 
@@ -225,14 +225,27 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-  # try:
-  #   name = request.get_json()['name']
-
-  # except:
-
-  # finally:
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
+  try:
+    name = request.form.get('name')
+    city = request.form.get('city')
+    state = request.form.get('state')
+    adress = request.form.get('address')
+    phone = request.form.get('phone')
+    facebook_link = request.form.get('facebook_link')
+    genres = request.form.get('genres')
+    venue = Venue(name=name, city=city, state=state, address=adress, 
+                  phone=phone, facebook_link=facebook_link, genres=genres)
+    db.session.add(venue)
+    db.session.commit()
+    # on successful db insert, flash success
+    flash('Venue ' + request.form['name'] + ' was successfully listed!')
+  except:
+    db.session.rollback()
+    print(sys.exc_info()) 
+    flash(sys.exc_info())
+  finally:
+    db.session.close()
+    
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
