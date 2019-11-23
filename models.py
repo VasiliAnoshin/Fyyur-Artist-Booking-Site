@@ -1,19 +1,12 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate, MigrateCommand
-from flask_moment import Moment
+from init import db
 
-app = Flask(__name__)
-moment = Moment(app)
-app.config.from_object('config')
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+class Show(db.Model):
+     __tablename__ = 'Show'
 
-# TODO: connect to a local postgresql database
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
+     id = db.Column(db.Integer, primary_key=True)
+     artist_id  = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable = False)
+     venue_id   = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable = False)
+     start_time = db.Column(db.DateTime())
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -24,10 +17,10 @@ class Venue(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    image_link = db.Column(db.String(500), nullable = True)
+    facebook_link = db.Column(db.String(120),)
+    genres = db.Column(db.String(120))
+    shows = db.relationship("Show", backref='venue', lazy = True)
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -38,26 +31,23 @@ class Artist(db.Model):
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
+    image_link = db.Column(db.String(500),nullable = True)
     facebook_link = db.Column(db.String(120))
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-    # TODO: 
-       #1) Implement Show 
-       #2) Artist models, 
-       #and complete all model relationships and properties, 
-       #as a database migration.
-
-#   class Show(db.Model):
-#      __tablename__ = 'Show'
-
-#      venue_id = ?
-#      venue_name = db.Column(db.String(120))
-#      artist_id = ?
-#      artist_name = db.Column(db.String(120))
-#      artist_image_link = db.Column(db.String(500))
-#      start_time = db.Column(db.Date)
+    shows = db.relationship("Show", backref='artist', lazy = True)
 
 
-db.create_all()
+
+# TODO: connect to a local postgresql database
+
+#----------------------------------------------------------------------------#
+# Models.
+#----------------------------------------------------------------------------#
+
+# TODO: implement any missing fields, as a database migration using Flask-Migrate
+# TODO: implement any missing fields, as a database migration using Flask-Migrate
+
+# TODO: 
+    #1) Implement Show 
+    #2) Artist models, 
+    #and complete all model relationships and properties, 
+    #as a database migration.

@@ -14,52 +14,16 @@ from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
 import sys
+from init import create_app
+from models import *
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
-
-app = Flask(__name__)
+app = create_app()
+app.app_context().push()
 moment = Moment(app)
-app.config.from_object('config')
-db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
-class Show(db.Model):
-     __tablename__ = 'Show'
-
-     id = db.Column(db.Integer, primary_key=True)
-     artist_id  = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable = False)
-     venue_id   = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable = False)
-     start_time = db.Column(db.DateTime())
-
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500), nullable = True)
-    facebook_link = db.Column(db.String(120),)
-    genres = db.Column(db.String(120))
-    shows = db.relationship("Show", backref='venue', lazy = True)
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500),nullable = True)
-    facebook_link = db.Column(db.String(120))
-    shows = db.relationship("Show", backref='artist', lazy = True)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -261,6 +225,8 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
+  data = session.query(Artist.id)
+  print(data)
   data=[{
     "id": 4,
     "name": "Guns N Petals",
@@ -432,7 +398,7 @@ def create_artist_form():
 def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Artist record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  # TODO: modify data to be the data object returned from db insertion ???
   try:
       name = request.form.get('name')
       city = request.form.get('city')
@@ -461,7 +427,7 @@ def create_artist_submission():
 def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
+  #       num_shows should be aggregated based on number of upcoming shows per venue. ??? 
   data=[{
     "venue_id": 1,
     "venue_name": "The Musical Hop",
