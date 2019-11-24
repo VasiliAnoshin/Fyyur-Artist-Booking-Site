@@ -246,6 +246,7 @@ def artists():
       })
   except:
     flash('An error occurred in server. List of Artist could not be presented')
+    print(sys.exc_info()) 
 
   return render_template('pages/artists.html', artists=data)
 
