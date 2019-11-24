@@ -225,18 +225,28 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  data = session.query(Artist.id)
-  print(data)
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
+  artists = Artist.query.all()
+
+  # data=[{
+  #   "id": 4,
+  #   "name": "Guns N Petals",
+  # }, {
+  #   "id": 5,
+  #   "name": "Matt Quevedo",
+  # }, {
+  #   "id": 6,
+  #   "name": "The Wild Sax Band",
+  # }]
+  data = []
+  try:
+    for arts in artists:
+      data.append({
+        "id": arts.id,
+        "name":arts.name
+      })
+  except:
+    flash('An error occurred in server. List of Artist could not be presented')
+
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
