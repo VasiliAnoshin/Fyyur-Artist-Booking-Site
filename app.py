@@ -54,27 +54,43 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  data =[] # N^3 not efficient
+  venues = Venue.query.all()
+  for states in Venue.query.distinct(Venue.state):
+    for city in Venue.query.filter(Venue.city == states.city):
+      for val in Venue.query.filter(Venue.city == city.city, Venue.state == states.state):
+        data.append({
+          "city": city.city,
+          "state": states.state,
+          "venues":[{
+            "id": val.id,
+            "name": val.name,
+            "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
+          }]
+      })
+  print(data)
+
+  # data=[{
+  #    "city": "San Francisco",
+  #    "state": "CA",
+  #    "venues": [{
+  #      "id": 1,
+  #      "name": "The Musical Hop",
+  #      "num_upcoming_shows": 0,
+  #    }, {
+  #      "id": 3,
+  #      "name": "Park Square Live Music & Coffee",
+  #      "num_upcoming_shows": 1,
+  #    }]
+  #  }, {
+  #    "city": "New York",
+  #    "state": "NY",
+  #    "venues": [{
+  #      "id": 2,
+  #      "name": "The Dueling Pianos Bar",
+  #      "num_upcoming_shows": 0,
+  #    }]
+  #  }]
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
