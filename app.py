@@ -52,8 +52,6 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
   data =[]
   city_to_state = {}
   for states in Venue.query.distinct(Venue.city, Venue.state).all():
@@ -77,44 +75,6 @@ def venues():
              "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
            }]
       })
-
-  #venues = Venue.query.all()
-  # for states in Venue.query.distinct(Venue.state):
-  #   for city in Venue.query.filter(Venue.city == states.city):
-  #     for val in Venue.query.filter(Venue.city == city.city, Venue.state == states.state):
-  #       data.append({
-  #         "city": city.city,
-  #         "state": states.state,
-  #         "venues":[{
-  #           "id": val.id,
-  #           "name": val.name,
-  #           "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
-  #         }]
-  #     })
-  # city_to_state = Venue.query.distinct(Venue.city, Venue.state).all()
-  # for city in city_to_state:          
-  #   if(city.city,city.state) not in data:
-  #     data.append({
-  #         "city": city.city,
-  #         "state":  city.state,
-  #         "venues":[{
-  #           "id": "xxx",
-  #           "name": "yyy",
-  #           #"num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
-  #         }]
-  #     })
-  #   else:
-  #       data[i]["venues"].append({
-  #           "venues":[{
-  #           "id": "zzz",
-  #           "name": "xxx",
-  #           #"num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
-  #         }]
-  #       })
-  # for city in  city_to_state:
-  #   print(city.city + " " + city.state)      
-  # print(data)
-
   # data=[{
   #    "city": "San Francisco",
   #    "state": "CA",
@@ -140,17 +100,17 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
+  search_word = '%{}%'.format(request.form.get('search_term').lower())
+  result = Venue.query.filter(Venue.name.ilike(search_word)).all()
+  response = {}
+  response["count"] = len(result)
+  response["data"] = []  
+  for val in result:
+    response.get("data").append({
+      "id": val.id,
+      "name": val.name,
+      "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count(),
+    })
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
@@ -247,8 +207,6 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
   try:
     name = request.form.get('name')
     city = request.form.get('city')
@@ -269,7 +227,6 @@ def create_venue_submission():
     flash('An error occurred. Venue ' + request.form.get('name') + ' could not be listed.')
   finally:
     db.session.close()
-
   return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
@@ -285,9 +242,17 @@ def delete_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
   artists = Artist.query.all()
-
+  data = []
+  try:
+    for arts in artists:
+      data.append({
+        "id": arts.id,
+        "name":arts.name
+      })   
+  except:
+    flash('An error occurred in server. List of Artist could not be presented')
+    print(sys.exc_info()) 
   # data=[{
   #   "id": 4,
   #   "name": "Guns N Petals",
@@ -297,18 +262,7 @@ def artists():
   # }, {
   #   "id": 6,
   #   "name": "The Wild Sax Band",
-  # }]
-  data = []
-  try:
-    for arts in artists:
-      data.append({
-        "id": arts.id,
-        "name":arts.name
-      })
-  except:
-    flash('An error occurred in server. List of Artist could not be presented')
-    print(sys.exc_info()) 
-
+  # }]   
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
@@ -491,7 +445,6 @@ def create_artist_submission():
       db.session.close()
   return render_template('pages/home.html')
 
-
 #  Shows
 #  ----------------------------------------------------------------
 
@@ -578,7 +531,6 @@ def not_found_error(error):
 @app.errorhandler(500)
 def server_error(error):
     return render_template('errors/500.html'), 500
-
 
 if not app.debug:
     file_handler = FileHandler('error.log')
