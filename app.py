@@ -54,21 +54,66 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data =[] # N^3 not efficient
-  venues = Venue.query.all()
-  for states in Venue.query.distinct(Venue.state):
-    for city in Venue.query.filter(Venue.city == states.city):
-      for val in Venue.query.filter(Venue.city == city.city, Venue.state == states.state):
+  data =[]
+  city_to_state = {}
+  for states in Venue.query.distinct(Venue.city, Venue.state).all():
+    for val in Venue.query.filter(Venue.city == states.city, Venue.state == states.state):
+      if(val.city in city_to_state.keys() and city_to_state[val.city] == val.state):
+        for x in data:
+          if ((x.get("state") == val.state) and (x.get("city") == val.city)):
+            x.get("venues").append({
+              "id": val.id,
+              "name": val.name,
+              "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
+            })
+      else:
+        city_to_state[val.city] = val.state
         data.append({
-          "city": city.city,
-          "state": states.state,
-          "venues":[{
-            "id": val.id,
-            "name": val.name,
-            "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
-          }]
+           "city": val.city,
+           "state": val.state,
+           "venues":[{
+             "id": val.id,
+             "name": val.name,
+             "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
+           }]
       })
-  print(data)
+
+  #venues = Venue.query.all()
+  # for states in Venue.query.distinct(Venue.state):
+  #   for city in Venue.query.filter(Venue.city == states.city):
+  #     for val in Venue.query.filter(Venue.city == city.city, Venue.state == states.state):
+  #       data.append({
+  #         "city": city.city,
+  #         "state": states.state,
+  #         "venues":[{
+  #           "id": val.id,
+  #           "name": val.name,
+  #           "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
+  #         }]
+  #     })
+  # city_to_state = Venue.query.distinct(Venue.city, Venue.state).all()
+  # for city in city_to_state:          
+  #   if(city.city,city.state) not in data:
+  #     data.append({
+  #         "city": city.city,
+  #         "state":  city.state,
+  #         "venues":[{
+  #           "id": "xxx",
+  #           "name": "yyy",
+  #           #"num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
+  #         }]
+  #     })
+  #   else:
+  #       data[i]["venues"].append({
+  #           "venues":[{
+  #           "id": "zzz",
+  #           "name": "xxx",
+  #           #"num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count()
+  #         }]
+  #       })
+  # for city in  city_to_state:
+  #   print(city.city + " " + city.state)      
+  # print(data)
 
   # data=[{
   #    "city": "San Francisco",
@@ -452,7 +497,7 @@ def create_artist_submission():
 
 @app.route('/shows')
 def shows():  
-  data =[]
+  data = []
   for show in Show.query.all():
     artist = Artist.query.filter(Artist.id == show.artist_id).one()
     data.append({
