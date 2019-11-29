@@ -214,7 +214,7 @@ def create_venue_submission():
     adress = request.form.get('address')
     phone = request.form.get('phone')
     facebook_link = request.form.get('facebook_link')
-    genres = request.form.get('genres')
+    genres = request.form.getlist('genres')
     venue = Venue(name=name, city=city, state=state, address=adress, 
                   phone=phone, facebook_link=facebook_link, genres=genres)
     db.session.add(venue)
