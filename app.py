@@ -156,7 +156,6 @@ def show_venue(venue_id):
         "past_shows_count": Show.query.filter(venue_id == Show.venue_id, Show.start_time < datetime.now()).count(),
         "upcoming_shows_count": Show.query.filter(venue_id == Show.venue_id, Show.start_time >= datetime.now()).count(),
     }
-  
   # data1={
   #   "id": 1,
   #   "name": "The Musical Hop",
@@ -292,32 +291,22 @@ def artists():
       })   
   except:
     flash('An error occurred in server. List of Artist could not be presented')
-    print(sys.exc_info()) 
-  # data=[{
-  #   "id": 4,
-  #   "name": "Guns N Petals",
-  # }, {
-  #   "id": 5,
-  #   "name": "Matt Quevedo",
-  # }, {
-  #   "id": 6,
-  #   "name": "The Wild Sax Band",
-  # }]   
+    print(sys.exc_info())
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
-  }
+  search_word = '%{}%'.format(request.form.get('search_term').lower())
+  result = Artist.query.filter(Artist.name.ilike(search_word)).all()
+  response = {}
+  response["count"] = len(result)
+  response["data"] = []  
+  for val in result:
+    response.get("data").append({
+      "id": val.id,
+      "name": val.name,
+      "num_upcoming_shows": Show.query.filter(val.id == Show.venue_id, Show.start_time > datetime.now()).count(),
+  })
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
@@ -506,42 +495,6 @@ def shows():
       "artist_image_link": artist.image_link,
       "start_time": show.start_time.strftime("%m/%d/%Y, %H:%M:%S"),
     })
-  # data=[{
-  #   "venue_id": 1,
-  #   "venue_name": "The Musical Hop",
-  #   "artist_id": 4,
-  #   "artist_name": "Guns N Petals",
-  #   "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-  #   "start_time": "2019-05-21T21:30:00.000Z"
-  # }, {
-  #   "venue_id": 3,
-  #   "venue_name": "Park Square Live Music & Coffee",
-  #   "artist_id": 5,
-  #   "artist_name": "Matt Quevedo",
-  #   "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-  #   "start_time": "2019-06-15T23:00:00.000Z"
-  # }, {
-  #   "venue_id": 3,
-  #   "venue_name": "Park Square Live Music & Coffee",
-  #   "artist_id": 6,
-  #   "artist_name": "The Wild Sax Band",
-  #   "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-  #   "start_time": "2035-04-01T20:00:00.000Z"
-  # }, {
-  #   "venue_id": 3,
-  #   "venue_name": "Park Square Live Music & Coffee",
-  #   "artist_id": 6,
-  #   "artist_name": "The Wild Sax Band",
-  #   "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-  #   "start_time": "2035-04-08T20:00:00.000Z"
-  # }, {
-  #   "venue_id": 3,
-  #   "venue_name": "Park Square Live Music & Coffee",
-  #   "artist_id": 6,
-  #   "artist_name": "The Wild Sax Band",
-  #   "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-  #   "start_time": "2035-04-15T20:00:00.000Z"
-  # }]
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
