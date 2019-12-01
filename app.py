@@ -461,19 +461,22 @@ def edit_artist_submission(artist_id):
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
   form = VenueForm()
+  venue_selected = Venue.query.get(venue_id)
+  if venue_selected is None:
+    return not_found_error('Venue does not found') #Msg does not hold by func
   venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
+    "id": venue_selected.id,
+    "name": venue_selected.name,
+    "genres":  venue_selected.genres.split(','),
+    "address": venue_selected.address,
+    "city":  venue_selected.city,
+    "state": venue_selected.state,
+    "phone": venue_selected.phone,
+    "website": venue_selected.website,
+    "facebook_link": venue_selected.facebook_link,
+    "seeking_talent": venue_selected.seeking_talent,
+    "seeking_description": venue_selected.seeking_description,
+    "image_link": venue_selected.image_link
   }
   # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=venue)
