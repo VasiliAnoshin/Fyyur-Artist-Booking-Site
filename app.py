@@ -351,7 +351,7 @@ def show_artist(artist_id):
         "upcoming_shows": upcoming_shows,
         "past_shows_count": Show.query.filter(artist_id == Show.artist_id, Show.start_time < datetime.now()).count(),
         "upcoming_shows_count": Show.query.filter(artist_id == Show.artist_id, Show.start_time >= datetime.now()).count(),
-    }
+  }
 
   # data1={
   #   "id": 4,
@@ -448,7 +448,6 @@ def edit_artist(artist_id):
     "seeking_description": user.seeking_description,
     "image_link": user.image_link
   }
-  # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
@@ -491,13 +490,27 @@ def edit_venue(venue_id):
     "seeking_description": venue_selected.seeking_description,
     "image_link": venue_selected.image_link
   }
-  # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
+  selected_venue = Venue.query.get(venue_id)
+  if selected_venue is None:
+     return not_found_error('selected_venue does not found')
+  try:
+    selected_venue.name = request.form.get('name')
+    selected_venue.city = request.form.get('city')
+    selected_venue.state = request.form.get('state')
+    selected_venue.phone = request.form.get('phone')
+    selected_venue.facebook_link = request.form.get('facebook_link')
+    selected_venue.genres = ','.join(request.form.getlist('genres'))
+    selected_venue.address = request.form.get('address')
+    db.session.commit()
+  except:
+    print('An error occurred. Venue ' + request.form.get('name') + ' could not be updated.') 
+    db.session.rollback()
+  finally:
+     db.session.close()
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -510,9 +523,6 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-  # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Artist record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion ???
   try:
       name = request.form.get('name')
       city = request.form.get('city')
