@@ -173,19 +173,15 @@ def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
   try:
-    print('Enter inside !!!')
-    print(venue_id)
-    show = Show.query.filter(Show.venue_id==venue_id).all()
-    if len(show)==0:
-      print(show)
-      db.session.delete(show)
-      db.session.commit()
+    shows = Show.query.filter(Show.venue_id==venue_id).all()
+    if len(shows) > 0:
+      for show in shows:
+        db.session.delete(show)
+        db.session.commit()
     val = Venue.query.filter(Venue.id==venue_id).first()
     if  val is not None:
       db.session.delete(val)
-      print(val)
       db.session.commit()
-    #flash('Venue '  + venue_id + ' successfully deleted!')
   except:
     db.session.rollback()
     print(sys.exc_info())
@@ -193,9 +189,11 @@ def delete_venue(venue_id):
     flash('An error occurred. Venue '  + venue_id + ' could not be deleted.')
   finally:
     db.session.close()
+    flash('Venue was successfully deleted!')
+  return  render_template('pages/home.html')
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
-  return  render_template('pages/home.html')
+
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -320,7 +318,7 @@ def edit_venue(venue_id):
   form = VenueForm()
   venue_selected = Venue.query.get(venue_id)
   if venue_selected is None:
-    return not_found_error('Venue does not found') #Msg does not hold by func
+    return not_found_error('Venue does not found') 
   venue={
     "id": venue_selected.id,
     "name": venue_selected.name,
@@ -379,7 +377,7 @@ def create_artist_submission():
                       phone=phone, facebook_link=facebook_link, genres=','.join(genres))
       db.session.add(artist)
       db.session.commit()
-      #flash('Artist ' + request.form['name'] + ' was successfully listed!')
+      flash('Artist ' + request.form['name'] + ' was successfully listed!')
   except:
       db.session.rollback()
       print('An error occurred. Artist ' + request.form.get('name') + ' could not be listed.') 
