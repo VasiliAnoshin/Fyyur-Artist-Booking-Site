@@ -41,20 +41,3 @@ class Artist(db.Model):
     seeking_description = db.Column(db.String(360))
     website = db.Column(db.String(120))
     shows = db.relationship("Show", backref='artist', lazy = True)
-
-
-
-# TODO: connect to a local postgresql database
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-# TODO: implement any missing fields, as a database migration using Flask-Migrate
-# TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-# TODO: 
-    #1) Implement Show 
-    #2) Artist models, 
-    #and complete all model relationships and properties, 
-    #as a database migration.
